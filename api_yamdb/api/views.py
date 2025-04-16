@@ -1,11 +1,9 @@
-from django.core.mail import send_mail
-from django.conf import settings
 from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
 from django.contrib.auth import get_user_model
 from .serializers import SignupSerializer
-from utils import send_confirmation_email
+# from .utils import send_confirmation_email
+from rest_framework.response import Response
+from rest_framework import status
 
 
 User = get_user_model()
@@ -14,15 +12,22 @@ User = get_user_model()
 class SignupView(APIView):
     def post(self, request):
         serializer = SignupSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        if serializer.is_valid():
+            username = serializer.validated_data['username']
+            email = serializer.validated_data['email']
 
-        username = serializer.validated_data['username']
-        email = serializer.validated_data['email']
+            user, created = User.objects.get_or_create(
+                username=username,
+                defaults={'email': email}
+            )
 
-        user, created = User.objects.get_or_create(username=username, email=email)
+            if not created and user.email != email:
+                user.email = email
+                user.save()
 
-        if created:
-            user.set_confirmation_code()
-            send_confirmation_email(user)
+            # send confirmation code
+            # confirmation_code = send_confirmation_email(user)
 
-        # return Response({"message": "Signup successful. Please check your email for the confirmation code."}, status=status.HTTP_201_CREATED)
+            return Response({'email': email, 'username': username}, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -1,12 +1,13 @@
 import random
+# import secrets
 from django.core.mail import send_mail
 from django.conf import settings
 
 
-def generate_confirmation_code():
-    return secrets.token_urlsafe(16)
 # def generate_confirmation_code():
-#     return str(random.randint(100000, 999999))
+#     return secrets.token_urlsafe(16)
+def generate_confirmation_code():
+    return str(random.randint(100000, 999999))
 
 
 def send_confirmation_email(user):
