@@ -1,5 +1,5 @@
 import secrets
-import random
+# import random
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
@@ -8,7 +8,7 @@ from django.core.exceptions import ValidationError
 
 MAX_LENGTH = 254
 MAX_LENGTH_ROLE = 10
-MAX_LENGTH_CODE = 6
+MAX_LENGTH_CODE = 10
 
 
 class User(AbstractUser):
@@ -63,5 +63,5 @@ class User(AbstractUser):
             raise ValidationError('Username "me" не разрешено.')
 
     def set_confirmation_code(self):
-        self.confirmation_code = str(random.randint(100000, 999999))  # secrets.token_urlsafe(16)
+        self.confirmation_code = ''.join(secrets.choice('0123456789') for _ in range(6))
         self.save()

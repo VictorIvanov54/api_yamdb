@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from django.contrib.auth import get_user_model
 from .serializers import SignupSerializer
-# from .utils import send_confirmation_email
+from .utils import send_confirmation_email
 from rest_framework.response import Response
 from rest_framework import status
 
@@ -20,13 +20,12 @@ class SignupView(APIView):
                 username=username,
                 defaults={'email': email}
             )
-
+            user.set_confirmation_code()
             if not created and user.email != email:
                 user.email = email
                 user.save()
 
-            # send confirmation code
-            # confirmation_code = send_confirmation_email(user)
+            send_confirmation_email(user)
 
             return Response({'email': email, 'username': username}, status=status.HTTP_200_OK)
 
