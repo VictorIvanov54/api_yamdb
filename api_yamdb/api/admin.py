@@ -7,9 +7,3 @@ from .models import User
 class UserAdmin(BaseUserAdmin):
     list_display = ('username', 'email', 'role', 'is_staff', 'is_superuser')
     list_filter = ('role', 'is_staff', 'is_superuser')
-    fieldsets = BaseUserAdmin.fieldsets + (
-        ('Дополнительная информация', {'fields': ('bio', 'role', 'confirmation_code')}),
-    )
-    add_fieldsets = BaseUserAdmin.add_fieldsets + (
-        ('Дополнительная информация', {'fields': ('bio', 'role')}),
-    )
