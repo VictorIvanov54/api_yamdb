@@ -12,7 +12,7 @@ def send_confirmation_email(user):
     message = (
         f'Привет, {user.username},\n\nВаш код: {user.confirmation_code}')
     from_email = settings.DEFAULT_FROM_EMAIL
-    recipient_list = user.email
+    recipient_list = [user.email]
 
     send_mail(
         subject, message, from_email, recipient_list, fail_silently=False

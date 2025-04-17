@@ -5,6 +5,12 @@ User = get_user_model()
 
 
 class UserSerializer(serializers.ModelSerializer):
+    role = serializers.ChoiceField(
+        choices=User.ROLE_CHOICES,
+        default=User.USER,
+        required=False
+    )
+
     class Meta:
         model = User
         fields = (
@@ -15,7 +21,14 @@ class UserSerializer(serializers.ModelSerializer):
             'bio',
             'role',
         )
-        read_only_fields = ('role',)
+
+    def get_fields(self):
+        fields = super().get_fields()
+        request = self.context.get('request')
+
+        if request and not request.user.is_admin:
+            fields['role'].read_only = True
+        return fields
 
     def validate_username(self, value):
         if value.lower() == 'me':
@@ -47,10 +60,14 @@ class TokenObtainSerializer(serializers.Serializer):
         try:
             user = User.objects.get(username=username)
         except User.DoesNotExist:
-            raise serializers.ValidationError({'username': 'User not found'})
+            raise serializers.ValidationError(
+                {'username': 'Пользователь не найден.'}
+            )
 
         if user.confirmation_code != code:
-            raise serializers.ValidationError({'confirmation_code': 'Invalid code'})
+            raise serializers.ValidationError(
+                {'confirmation_code': 'Неверный код подтверждения.'}
+            )
 
         data['user'] = user
         return data
