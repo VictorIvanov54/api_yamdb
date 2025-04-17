@@ -34,3 +34,23 @@ class SignupSerializer(serializers.Serializer):
         if value.lower() == 'me':
             raise serializers.ValidationError('Имя "me" запрещено.')
         return value
+
+
+class TokenObtainSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    confirmation_code = serializers.CharField()
+
+    def validate(self, data):
+        username = data.get('username')
+        code = data.get('confirmation_code')
+
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            raise serializers.ValidationError({'username': 'User not found'})
+
+        if user.confirmation_code != code:
+            raise serializers.ValidationError({'confirmation_code': 'Invalid code'})
+
+        data['user'] = user
+        return data

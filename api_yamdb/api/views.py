@@ -4,6 +4,9 @@ from .serializers import SignupSerializer
 from .utils import send_confirmation_email
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework_simplejwt.tokens import RefreshToken
+
+from .serializers import TokenObtainSerializer
 
 
 User = get_user_model()
@@ -30,3 +33,15 @@ class SignupView(APIView):
             return Response({'email': email, 'username': username}, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class TokenObtainView(APIView):
+    def post(self, request):
+        serializer = TokenObtainSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        user = serializer.validated_data['user']
+        refresh = RefreshToken.for_user(user)
+
+        return Response({'token': str(refresh.access_token)}, status=status.HTTP_200_OK)
