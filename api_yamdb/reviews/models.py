@@ -23,7 +23,7 @@ class Category(models.Model):
         return self.name
 
 
-class Titles(models.Model):
+class Title(models.Model):
     """Модель Произведений."""
     name = models.CharField('Название произведения', max_length=200)
     year = models.IntegerField('Год выпуска', )
@@ -36,6 +36,7 @@ class Titles(models.Model):
         null=True,
         help_text='Удерживайте Ctrl для выбора нескольких вариантов',
         on_delete=models.SET_NULL,
+        related_name='titles',
     )
     category = models.ForeignKey(
         Category,
