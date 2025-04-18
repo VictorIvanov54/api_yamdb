@@ -11,6 +11,7 @@ MAX_LENGTH_CODE = 10
 
 
 class User(AbstractUser):
+    """Кастомная модель пользователя."""
     USER = 'user'
     MODERATOR = 'moderator'
     ADMIN = 'admin'
@@ -23,7 +24,7 @@ class User(AbstractUser):
 
     email = models.EmailField(
         max_length=MAX_LENGTH,
-        # unique=True,
+        unique=True,
         verbose_name='Email',
     )
     bio = models.TextField(
@@ -62,10 +63,7 @@ class User(AbstractUser):
             raise ValidationError('Username "me" не разрешено.')
 
     def set_confirmation_code(self):
-        self.confirmation_code = ''.join(secrets.choice('0123456789') for _ in range(6))
+        self.confirmation_code = ''.join(
+            secrets.choice('0123456789') for _ in range(6)
+        )
         self.save()
-
-    # def save(self, *args, **kwargs):
-    #     if not self.pk and not self.is_superuser:
-    #         self.set_unusable_password()
-    #     super().save(*args, **kwargs)
