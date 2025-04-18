@@ -1,13 +1,9 @@
 import secrets
 
 from django.contrib.auth.models import AbstractUser
+from django.conf import settings
 from django.db import models
 from django.core.exceptions import ValidationError
-
-
-MAX_LENGTH = 254
-MAX_LENGTH_ROLE = 10
-MAX_LENGTH_CODE = 10
 
 
 class User(AbstractUser):
@@ -23,7 +19,7 @@ class User(AbstractUser):
     ]
 
     email = models.EmailField(
-        max_length=MAX_LENGTH,
+        max_length=settings.MAX_LENGTH,
         unique=True,
         verbose_name='Email',
     )
@@ -32,13 +28,13 @@ class User(AbstractUser):
         verbose_name='Biography',
     )
     role = models.CharField(
-        max_length=MAX_LENGTH_ROLE,
+        max_length=settings.MAX_LENGTH_ROLE,
         choices=ROLE_CHOICES,
         default=USER,
         verbose_name='Role',
     )
     confirmation_code = models.CharField(
-        max_length=MAX_LENGTH_CODE,
+        max_length=settings.MAX_LENGTH_CODE,
         blank=True,
         verbose_name='Confirmation Code'
     )

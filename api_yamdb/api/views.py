@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from rest_framework import permissions, status, viewsets
+from rest_framework import permissions, status, viewsets, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -25,15 +25,12 @@ class SignupView(APIView):
             username = serializer.validated_data['username']
             email = serializer.validated_data['email']
 
-            user, created = User.objects.get_or_create(
+            user, _ = User.objects.get_or_create(
                 username=username,
                 defaults={'email': email}
             )
-            user.set_confirmation_code()
-            if not created and user.email != email:
-                user.email = email
-                user.save()
 
+            user.set_confirmation_code()
             send_confirmation_email(user)
 
             return Response({'email': email, 'username': username},
@@ -47,17 +44,36 @@ class TokenObtainView(APIView):
     Класс обрабатывает JWT access tokens для пользователей. Пользователи
     должны предоставить зарегистрированный username и confirmation_code.
     """
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
+        username = request.data.get('username')
+        if not username:
+            return Response({'username': 'Необходимое поле.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            return Response({'detail': 'Пользователь не найден.'},
+                            status=status.HTTP_404_NOT_FOUND)
+
         serializer = TokenObtainSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors,
                             status=status.HTTP_400_BAD_REQUEST)
 
-        user = serializer.validated_data['user']
+        confirmation_code = serializer.validated_data['confirmation_code']
+        if user.confirmation_code != confirmation_code:
+            return Response(
+                {'confirmation_code': 'Invalid confirmation code.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         refresh = RefreshToken.for_user(user)
 
-        return Response({'token': str(refresh.access_token)},
-                        status=status.HTTP_200_OK)
+        return Response(
+            {'token': str(refresh.access_token)},
+            status=status.HTTP_200_OK
+        )
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -67,14 +83,21 @@ class UserViewSet(viewsets.ModelViewSet):
     - /users/{username}/ [GET, PATCH, DELETE]
     - /users/me/ [GET, PATCH]
     """
+    http_method_names = ['get', 'post', 'patch', 'delete']
     queryset = User.objects.all()
     serializer_class = UserSerializer
     lookup_field = 'username'
     permission_classes = (IsAdmin,)
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('username',)
 
     @action(detail=False, methods=['get', 'patch'], url_path='me',
             permission_classes=(permissions.IsAuthenticated,))
     def me(self, request):
+        """
+        Функция работает с ендпоинтом /me/.
+        Пользовател может изменять и просматривать только свои данные.
+        """
         if request.method == 'GET':
             serializer = self.get_serializer(request.user)
             return Response(serializer.data)

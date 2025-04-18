@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.conf import settings
 from rest_framework import serializers
 
 
@@ -7,8 +8,17 @@ User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
     """Сериализатор для модели User. Для всех пользователей."""
-    username = serializers.CharField(required=True, allow_blank=False)
-    email = serializers.EmailField(required=True, allow_blank=False)
+    username = serializers.RegexField(
+        regex=r'^[\w.@+-]+\Z',
+        required=True,
+        allow_blank=False,
+        max_length=settings.MAX_LENGTH_USERNAME
+    )
+    email = serializers.EmailField(
+        required=True,
+        allow_blank=False,
+        max_length=settings.MAX_LENGTH
+    )
     role = serializers.ChoiceField(
         choices=User.ROLE_CHOICES,
         default=User.USER,
@@ -42,15 +52,24 @@ class UserSerializer(serializers.ModelSerializer):
         """Функция запрещает задавать имя 'me' в поле 'username'."""
         if value.lower() == 'me':
             raise serializers.ValidationError('Имя "me" запрещено.')
+        if User.objects.filter(username=value).exists():
+            raise serializers.ValidationError(
+                'Это имя пользователя уже используется.'
+            )
+        return value
+
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError('Этот email уже используется.')
         return value
 
 
 class SignupSerializer(serializers.Serializer):
     """Сериализатор для регистрации пользователей."""
-    email = serializers.EmailField()
+    email = serializers.EmailField(max_length=settings.MAX_LENGTH)
     username = serializers.RegexField(
         regex=r'^[\w.@+-]+\Z',
-        max_length=150
+        max_length=settings.MAX_LENGTH_USERNAME
     )
 
     def validate_username(self, value):
@@ -58,6 +77,27 @@ class SignupSerializer(serializers.Serializer):
         if value.lower() == 'me':
             raise serializers.ValidationError('Имя "me" запрещено.')
         return value
+
+    def validate(self, data):
+        email = data.get('email')
+        username = data.get('username')
+
+        user_with_email = User.objects.filter(email=email).first()
+        user_with_username = User.objects.filter(username=username).first()
+
+        # Проверка, принадлежит ли email другому пользователю
+        if user_with_email and user_with_email.username != username:
+            raise serializers.ValidationError({
+                'email': 'Такой email уже используется другим пользователем.'
+            })
+
+        # Проверка соответствия username и email
+        if user_with_username and user_with_username.email != email:
+            raise serializers.ValidationError({
+                'email': 'Email не соответствует данным пользователя.',
+            })
+
+        return data
 
 
 class TokenObtainSerializer(serializers.Serializer):
