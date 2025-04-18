@@ -1,4 +1,5 @@
 """Модуль сериализаторов проекта."""
+from datetime import date
 from django.db.models import Sum
 from rest_framework import serializers
 
@@ -25,8 +26,15 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class TitleSerializer(serializers.ModelSerializer):
     """Сериализатор модели Произведений."""
-    genre = GenreSerializer(many=True, required=False)
-    category = CategorySerializer(many=True, required=False)
+    genre = serializers.SlugRelatedField(
+        many=True,
+        slug_field='slug',
+        queryset=Genre.objects.all()
+    )
+    category = serializers.SlugRelatedField(
+        slug_field='slug',
+        queryset=Category.objects.all()
+    )
     rating = serializers.SerializerMethodField()
 
     class Meta:
@@ -36,13 +44,19 @@ class TitleSerializer(serializers.ModelSerializer):
         )
         depth = 1
 
-    def create(self, validated_data):
-        if ('genre' or 'category') not in self.initial_data:
-            title = Title.objects.create(**validated_data)
-            return title
+    def validate_year(self, value):
+        current_year = date.today().year
+        if value > current_year:
+            raise serializers.ValidationError('Год произведения не может быть в будущем.')
+        return value
+
+    # def create(self, validated_data):
+    #     if ('genre' or 'category') not in self.initial_data:
+    #         title = Title.objects.create(**validated_data)
+    #         return title
 
     def get_rating(self, obj):
-        total = obj.rating.aggregate(Sum('score'))['score__sum']  # Сумма всех оценок
-        if total:
-            return total / obj.rating.count()  # Деление суммы на количество
-        return 0  # Возвращаем 0, если оценок нет
+        sum = obj.reviews.aggregate(Sum('score'))['score__sum']
+        if sum:
+            return sum / obj.reviews.count()
+        return 0

@@ -26,9 +26,9 @@ class Category(models.Model):
 class Title(models.Model):
     """Модель Произведений."""
     name = models.CharField('Название произведения', max_length=200)
-    year = models.IntegerField('Год выпуска', )
+    year = models.PositiveIntegerField('Год выпуска', )
     rating = models.IntegerField('Рейтинг на основе отзывов', default=None)
-    description = models.TextField('Описание произведения', )
+    description = models.TextField('Описание произведения', blank=True)
     genre = models.ManyToManyField(
         Genre,
         verbose_name='Жанры',
@@ -46,6 +46,9 @@ class Title(models.Model):
         on_delete=models.SET_NULL,
         related_name='titles',
     )
+
+    class Meta:
+        ordering = ['name']
 
     def __str__(self):
         return self.name

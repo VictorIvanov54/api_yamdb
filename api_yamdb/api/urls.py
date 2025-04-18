@@ -6,12 +6,12 @@ from api.views import GenreViewSet, CategoryViewSet, TitleViewSet
 
 
 router = DefaultRouter()
-router.register('genre', GenreViewSet, basename='genre')
-router.register('category', CategoryViewSet, basename='category')
-router.register('title', TitleViewSet, basename='title')
+router.register('genres', GenreViewSet, basename='genres')
+router.register('categories', CategoryViewSet, basename='categories')
+router.register('titles', TitleViewSet, basename='titles')
 
 urlpatterns = [
     path('', include(router.urls)),
-    # path('', include('djoser.urls')),
-    # path('', include('djoser.urls.jwt')),
+    path('auth/', include('djoser.urls')),
+    path('auth/', include('djoser.urls.jwt')),
 ]
