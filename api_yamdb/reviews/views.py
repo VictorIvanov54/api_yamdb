@@ -1,8 +1,8 @@
-# reviews/views.py
 from rest_framework import viewsets, permissions, exceptions
-from .models import Review, Comment, Title
+from .models import Review, Comment
+from api.models import Title
 from .serializers import ReviewSerializer, CommentSerializer
-from .permissions import IsAuthorOrModeratorOrAdmin, ReadOnly
+from api.permissions import IsAuthorOrModeratorOrAdmin
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -25,6 +25,12 @@ class ReviewViewSet(viewsets.ModelViewSet):
         title = Title.objects.get(pk=title_id)
         serializer.save(author=self.request.user, title=title)
 
+    def perform_update(self, serializer):
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        instance.delete()
+
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
@@ -41,3 +47,9 @@ class CommentViewSet(viewsets.ModelViewSet):
         review_id = self.kwargs.get('review_id')
         review = Review.objects.get(pk=review_id)
         serializer.save(author=self.request.user, review=review)
+
+    def perform_update(self, serializer):
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        instance.delete()
