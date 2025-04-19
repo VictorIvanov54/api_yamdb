@@ -4,6 +4,37 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 
+class Title(models.Model):
+    """Модель Произведений."""
+    name = models.CharField('Название произведения', max_length=200)
+    year = models.PositiveIntegerField('Год выпуска', )
+    rating = models.IntegerField('Рейтинг на основе отзывов', default=None)
+    description = models.TextField('Описание произведения', blank=True)
+    genre = models.ManyToManyField(
+        Genre,
+        verbose_name='Жанры',
+        blank=True,
+        null=True,
+        help_text='Удерживайте Ctrl для выбора нескольких вариантов',
+        on_delete=models.SET_NULL,
+        related_name='titles',
+    )
+    category = models.ForeignKey(
+        Category,
+        verbose_name='Категории',
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name='titles',
+    )
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
 class Review(models.Model):
     title = models.ForeignKey(
         'api.Title',

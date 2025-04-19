@@ -1,17 +1,14 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-
-from .views import ReviewViewSet, CommentViewSet
+from .views import ReviewViewSet, CommentViewSet # Импорт из reviews!
 
 router = DefaultRouter()
 
-
-router.register('titles/(?P<title_id>d+)/reviews', ReviewViewSet,
+router.register(r'titles/(?P<title_id>\d+)/reviews', ReviewViewSet,
                 basename='review')
 
-
 comments_router = DefaultRouter()
-comments_router.register('reviews/(?P<review_id>[^/.]+)/comments',
+comments_router.register(r'reviews/(?P<review_id>[^/.]+)/comments',
                          CommentViewSet, basename='review-comments')
 
 urlpatterns = [
