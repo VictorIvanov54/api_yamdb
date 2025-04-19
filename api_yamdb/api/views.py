@@ -3,7 +3,6 @@ from rest_framework import permissions, status, viewsets, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_simplejwt.tokens import RefreshToken
 
 from .permissions import IsAdmin
 from .serializers import (SignupSerializer, TokenObtainSerializer,
@@ -47,33 +46,18 @@ class TokenObtainView(APIView):
     def post(self, request, *args, **kwargs):
         username = request.data.get('username')
         if not username:
-            return Response({'username': 'Необходимое поле.'},
+            return Response('username - необходимое поле.',
                             status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            user = User.objects.get(username=username)
+            User.objects.get(username=username)
         except User.DoesNotExist:
-            return Response({'detail': 'Пользователь не найден.'},
+            return Response('Пользователь не найден.',
                             status=status.HTTP_404_NOT_FOUND)
 
-        serializer = TokenObtainSerializer(data=request.data)
-        if not serializer.is_valid():
-            return Response(serializer.errors,
-                            status=status.HTTP_400_BAD_REQUEST)
-
-        confirmation_code = serializer.validated_data['confirmation_code']
-        if user.confirmation_code != confirmation_code:
-            return Response(
-                {'confirmation_code': 'Invalid confirmation code.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        refresh = RefreshToken.for_user(user)
-
-        return Response(
-            {'token': str(refresh.access_token)},
-            status=status.HTTP_200_OK
-        )
+        data = TokenObtainSerializer(data=request.data)
+        if not data.is_valid():
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -95,12 +79,13 @@ class UserViewSet(viewsets.ModelViewSet):
             permission_classes=(permissions.IsAuthenticated,))
     def me(self, request):
         """
-        Функция работает с ендпоинтом /me/.
-        Пользовател может изменять и просматривать только свои данные.
+        Предоставляет ендпоинт users/me/.
+        Аутентифицированный пользователь может изменять и просматривать
+        только свои данные.
         """
         if request.method == 'GET':
-            serializer = self.get_serializer(request.user)
-            return Response(serializer.data)
+            user = self.get_serializer(request.user)
+            return Response(user.data)
 
         elif request.method == 'PATCH':
             serializer = self.get_serializer(
@@ -109,5 +94,4 @@ class UserViewSet(viewsets.ModelViewSet):
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data)
-            return Response(serializer.errors,
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response(status=status.HTTP_400_BAD_REQUEST)

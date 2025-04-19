@@ -85,17 +85,15 @@ class SignupSerializer(serializers.Serializer):
         user_with_email = User.objects.filter(email=email).first()
         user_with_username = User.objects.filter(username=username).first()
 
-        # Проверка, принадлежит ли email другому пользователю
         if user_with_email and user_with_email.username != username:
-            raise serializers.ValidationError({
-                'email': 'Такой email уже используется другим пользователем.'
-            })
+            raise serializers.ValidationError(
+                'Данный email уже используется другим пользователем.'
+            )
 
-        # Проверка соответствия username и email
         if user_with_username and user_with_username.email != email:
-            raise serializers.ValidationError({
-                'email': 'Email не соответствует данным пользователя.',
-            })
+            raise serializers.ValidationError(
+                'Email не соответствует данным пользователя.',
+            )
 
         return data
 
@@ -107,7 +105,7 @@ class TokenObtainSerializer(serializers.Serializer):
 
     def validate(self, data):
         """
-        Проверяет существует ли пользователь с именем username и код
+        Проверяет существует ли пользователь с именем username и кодом
         подтверждения confirmation_code.
         """
         username = data.get('username')
@@ -116,14 +114,7 @@ class TokenObtainSerializer(serializers.Serializer):
         try:
             user = User.objects.get(username=username)
         except User.DoesNotExist:
-            raise serializers.ValidationError(
-                {'username': 'Пользователь не найден.'}
-            )
+            raise serializers.ValidationError('Пользователь не найден.')
 
         if user.confirmation_code != code:
-            raise serializers.ValidationError(
-                {'confirmation_code': 'Неверный код подтверждения.'}
-            )
-
-        data['user'] = user
-        return data
+            raise serializers.ValidationError('Неверный код подтверждения.')

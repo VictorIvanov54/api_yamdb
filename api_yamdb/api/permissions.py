@@ -1,12 +1,6 @@
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 
 
-class ReadOnly(BasePermission):
-    """Права доступа - только чтение."""
-    def has_permission(self, request, view):
-        return request.method in SAFE_METHODS
-
-
 class IsAdmin(BasePermission):
     """
     Права доступа - только администратор может просматривать
