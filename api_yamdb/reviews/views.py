@@ -1,5 +1,5 @@
-from rest_framework import viewsets, permissions
-from rest_framework import exceptions  # Import exceptions
+from rest_framework import viewsets
+from rest_framework.pagination import PageNumberPagination
 
 from django.shortcuts import get_object_or_404
 
@@ -11,14 +11,14 @@ from api.permissions import IsAuthorOrModeratorOrAdmin
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = IsAuthorOrModeratorOrAdmin
+    pagination_class = PageNumberPagination
 
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')
         if title_id is not None:
-            # get_object_or_404 поднимает исключение, если объект не найден
             get_object_or_404(Title, pk=title_id)
             return Review.objects.filter(title__id=title_id)
-        return Review.objects.all()  # Или return Review.objects.none()
+        return Review.objects.all()
 
     def perform_create(self, serializer):
         title_id = self.kwargs.get('title_id')
@@ -29,14 +29,14 @@ class ReviewViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = IsAuthorOrModeratorOrAdmin
+    pagination_class = PageNumberPagination
 
     def get_queryset(self):
         review_id = self.kwargs.get('review_id')
         if review_id is not None:
-            # get_object_or_404 поднимает исключение, если объект не найден
             get_object_or_404(Review, pk=review_id)
             return Comment.objects.filter(review__id=review_id)
-        return Comment.objects.all()  # Или return Comment.objects.none()
+        return Comment.objects.all()
 
     def perform_create(self, serializer):
         review_id = self.kwargs.get('review_id')

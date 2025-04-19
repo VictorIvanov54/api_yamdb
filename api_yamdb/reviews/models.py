@@ -5,7 +5,6 @@ User = get_user_model()
 
 
 class Title(models.Model):
-    """Модель Произведений."""
     name = models.CharField('Название произведения', max_length=200)
     year = models.PositiveIntegerField('Год выпуска', )
     rating = models.IntegerField('Рейтинг на основе отзывов', default=None)
