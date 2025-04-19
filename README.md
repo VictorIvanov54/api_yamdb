@@ -1,15 +1,14 @@
-# API Yatube
+# Yamdb
 
 ## Описание
-Приложение "API Yatube", созданное c использованием Django REST Framework и аутентификации JWT, взаимодействует с API, и предоставляет эндпоинты для:
+Проект "Yamdb" собирает отзывы пользователей на произведения.
+Проект осуществляет следующие действия:
 
-+ Аутентификации пользователей (JWT)
-+ Создания, редактирования и удаления публикаций
-+ Комментирования публикаций
-+ Объединение публикаций в группы
-+ Подписки, и отмены подписки на пользователей
-+ Просмотра групп предназначенных для постов
-
++ Регистрацию пользователей через отправку подтверждения на указанный email.
++ Аутентификацию пользователей (JWT)
++ Предоставляет возможность пользователям дать оценку и написать отзыв на произведения
++ Предоставляет возможность пользователям комментировать отзывы пользователей
+  
 
 ## Как запустить проект
 
@@ -17,89 +16,110 @@
 ```
 git clone git@github.com:MariaWheels28/api_final_yatube.git
 ```
+
+Перейти в корень проекта:
 ```
-cd api_final_yatube
+cd api_yamdb
 ```
+
 Cоздать и активировать виртуальное окружение:
-
 ```
-python3.9 -m venv venv
+python3 -m venv venv
 ```
-
 ```
 source venv/bin/activate
 ```
-Установить зависимости из файла requirements.txt:
 
+Установить зависимости из файла requirements.txt:
 ```
 python3 -m pip install --upgrade pip
 ```
-
 ```
 pip install -r requirements.txt
 ```
 
 Выполнить миграции:
-
 ```
 cd yatube_api
 ```
-
 ```
 python3 manage.py migrate
 ```
 Запустить проект:
-
 ```
 python3 manage.py runserver
 ```
 
 ## Примеры запросов к API
 
-### 1. Аутентификация
+### 1. Регистрация и аутентификация
 
-| Метод | Ендпоинт | Описание |
-|-----:|:--------------------:|-----------------------:|
-| POST | /api/v1/jwt/create/  | Получение JWT token    |
-| POST | /api/v1/jwt/refresh/ | Обновление JWT token   |
-| POST | /api/v1/jwt/verify/  | Верификация JWT token  |
-
-
-POST /api/v1/jwt/create/
+POST /api/v1/auth/signup/ - Регистрация пользователя в системе и оправка кода на email:
 ```
 {
-    "username": "user1",
-    "password": "securepassword"
+"email": "user@example.com",
+"username": "^w\\Z"
 }
 ```
-### 2. Подписка на пользователя
-POST /api/v1/follow/
-
-Authorization: Bearer your_access_token
+POST /api/v1/auth/token/  - Получение JWT token:
 ```
 {
-    "user": "current_user",
-    "following": "another_user"
+  "username": "^w\\Z",
+  "confirmation_code": "string"
+}
+```
+### 2. Просмотр и добавление данных о произведении
+
+GET  /api/v1/titles/  - Получение списка всех произведений
+POST /api/v1/titles/ - Добавление нового произведения (доступно только администратору):
+```
+{
+  "name": "string",
+  "year": 0,
+  "description": "string",
+  "genre": [
+    "string"
+  ],
+  "category": "string"
+}
+```
+GET  /api/v1/categories/  - Получение списка всех произведений заданной категории
+POST  /api/v1/categories/ - Добавление новой категории (доступно только администратору):
+```
+{
+  "name": "string",
+  "slug": "^-$"
+}
+```
+### 3. Просмотр и добавление отзывов и комментариев
+
+POST /api/v1/titles/{title_id}/reviews/ - Добавление нового отзыва:
+```
+{
+  "text": "string",
+  "score": 5
 }
 ```
 
-### 3. Создание поста
-POST /api/v1/posts/
-
-Authorization: Bearer your_access_token
+POST /api/v1/titles/{title_id}/reviews/{review_id}/comments/ - Добавление комментария к отзыву:
 ```
 {
-    "text": "Моя первая публикация на Yatube.",
-    "group": 10
+  "text": "string"
 }
 ```
 
-### 4. Добавление комментария к публикации
-POST /api/v1/posts/{post_id}/comments/
+### 4. Получение списка пользователей или своей учетной записи
 
-Authorization: Bearer your_access_token
+GET /api/v1/users/ - Получение списка всех пользователей
+GET /api/v1/users/me/ - Получение данных своей учетной записи:
+Response:
 ```
 {
-    "text": "У тебя замечательная публикация!"
+  "username": "^w\\Z",
+  "email": "user@example.com",
+  "first_name": "string",
+  "last_name": "string",
+  "bio": "string",
+  "role": "user"
 }
 ```
