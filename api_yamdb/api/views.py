@@ -1,12 +1,19 @@
+"""Модуль вьюсетов."""
 from django.contrib.auth import get_user_model
+from django_filters.rest_framework import DjangoFilterBackend
+
 from rest_framework import permissions, status, viewsets, filters
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .permissions import IsAdmin
-from .serializers import (SignupSerializer, TokenObtainSerializer,
-                          UserSerializer)
+from reviews.models import Genre, Category, Title
+from api.serializers import (
+  SignupSerializer, TokenObtainSerializer, UserSerializer,
+    GenreSerializer, CategorySerializer, TitleSerializer,
+)
+from .permissions import IsAdminOrReadOnly, IsAdmin
 from .utils import send_confirmation_email
 
 
@@ -95,3 +102,35 @@ class UserViewSet(viewsets.ModelViewSet):
                 serializer.save()
                 return Response(serializer.data)
             return Response(status=status.HTTP_400_BAD_REQUEST)
+  
+
+class GenreViewSet(viewsets.ModelViewSet):
+    """Вьюсет модели Жанров."""
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+    permission_classes = (IsAdminOrReadOnly, )
+    lookup_field = 'slug'
+    pagination_class = PageNumberPagination
+    filter_backends = (filters.SearchFilter, )
+    search_fields = ('name', )
+
+
+class CategoryViewSet(viewsets.ModelViewSet):
+    """Вьюсет модели Категорий."""
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = (IsAdminOrReadOnly, )
+    lookup_field = 'slug'
+    pagination_class = PageNumberPagination
+    filter_backends = (filters.SearchFilter, )
+    search_fields = ('name', )
+
+
+class TitleViewSet(viewsets.ModelViewSet):
+    """Вьюсет модели Произведений."""
+    queryset = Title.objects.all()
+    serializer_class = TitleSerializer
+    permission_classes = (IsAdminOrReadOnly, )
+    pagination_class = PageNumberPagination
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = ('category__slug', 'genre__slug', 'name', 'year')

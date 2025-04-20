@@ -34,4 +34,3 @@ class IsAuthorOrModeratorOrAdmin(BasePermission):
             user_authenticated and (
                 obj.author == request.user or user_moderator or user_admin
             )
-        )
