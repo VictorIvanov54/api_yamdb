@@ -5,18 +5,18 @@ from rest_framework import filters
 from rest_framework import viewsets
 from rest_framework.pagination import PageNumberPagination
 
-from reviews.models import Genre, Category, Title, User
+from reviews.models import Genre, Category, Title
 from api.serializers import (
     GenreSerializer, CategorySerializer, TitleSerializer,
-    UserSerializer, 
+    # UserSerializer, 
 )
 from .permissions import IsAdminOrReadOnly
 
 
-class UserViewSet(viewsets.ReadOnlyModelViewSet):
-    """Вьюсет модели Пользователей."""
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
+# class UserViewSet(viewsets.ReadOnlyModelViewSet):
+#     """Вьюсет модели Пользователей."""
+#     queryset = User.objects.all()
+#     serializer_class = UserSerializer
 
 
 class GenreViewSet(viewsets.ModelViewSet):
@@ -49,6 +49,3 @@ class TitleViewSet(viewsets.ModelViewSet):
     pagination_class = PageNumberPagination
     filter_backends = (DjangoFilterBackend, )
     filterset_fields = ('category__slug', 'genre__slug', 'name', 'year')
-
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
