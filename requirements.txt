@@ -13,7 +13,6 @@ Django==3.2
 django-filter==21.1
 django-templated-mail==1.1.1
 djangorestframework==3.12.4
-djangorestframework-simplejwt==4.7.2
 djoser==2.1.0
 idna==3.10
 iniconfig==2.1.0
@@ -41,4 +40,8 @@ toml==0.10.2
 typing_extensions==4.13.2
 tzdata==2025.2
 uritemplate==4.1.1
+djangorestframework_simplejwt==5.5.0
+idna==3.10
+iniconfig==2.1.0
+python-dotenv==1.0.1
 urllib3==1.26.20
