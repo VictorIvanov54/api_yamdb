@@ -1,4 +1,7 @@
+import os
 from pathlib import Path
+from dotenv import load_dotenv
+from datetime import timedelta
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,6 +24,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'api',
+    'reviews',
 ]
 
 MIDDLEWARE = [
@@ -101,3 +107,34 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = ((BASE_DIR / 'static/'),)
+
+AUTH_USER_MODEL = 'reviews.User'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+load_dotenv()
+
+EMAIL_HOST = os.getenv('EMAIL_HOST')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=10),
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}
+
+MAX_LENGTH = 254
+MAX_LENGTH_USERNAME = 150
+MAX_LENGTH_ROLE = 10
+MAX_LENGTH_CODE = 10
