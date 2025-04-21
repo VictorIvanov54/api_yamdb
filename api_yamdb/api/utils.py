@@ -11,4 +11,5 @@ def send_confirmation_email(user):
     from_email = settings.DEFAULT_FROM_EMAIL
     recipient_list = [user.email]
 
-    send_mail(subject, message, from_email, recipient_list)
+    send_mail(subject, message, from_email, recipient_list,
+              fail_silently=False)

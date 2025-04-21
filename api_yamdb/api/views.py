@@ -7,6 +7,7 @@ from rest_framework import permissions, status, viewsets, filters
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 
 from reviews.models import Genre, Category, Title, Comment, Review
@@ -26,6 +27,8 @@ class SignupView(APIView):
     Класс обрабатывает регистрацию пользователя и отправляет код подтверждения
     на указанный email.
     """
+    permission_classes = (AllowAny,)
+
     def post(self, request):
         serializer = SignupSerializer(data=request.data)
         if serializer.is_valid():
@@ -51,6 +54,8 @@ class TokenObtainView(APIView):
     Класс обрабатывает JWT access tokens для пользователей. Пользователи
     должны предоставить зарегистрированный username и confirmation_code.
     """
+    permission_classes = (AllowAny,)
+
     def post(self, request, *args, **kwargs):
         username = request.data.get('username')
         if not username:
