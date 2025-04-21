@@ -1,3 +1,4 @@
+from django.conf import settings
 import django.contrib.auth.models
 import django.contrib.auth.validators
 from django.db import migrations, models
@@ -10,41 +11,44 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
+        ('api', '0001_initial'),
+        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('auth', '0012_alter_user_first_name_max_length'),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Category',
+            name='Review',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=256, verbose_name='Название категории произведения')),
-                ('slug', models.SlugField(unique=True)),
-            ],
-        ),
-        migrations.CreateModel(
-            name='Genre',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=256, verbose_name='Название жанра произведения')),
-                ('slug', models.SlugField(unique=True)),
-            ],
-        ),
-        migrations.CreateModel(
-            name='Title',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=200, verbose_name='Название произведения')),
-                ('year', models.PositiveIntegerField(verbose_name='Год выпуска')),
-                ('rating', models.IntegerField(default=None, verbose_name='Рейтинг на основе отзывов')),
-                ('description', models.TextField(blank=True, verbose_name='Описание произведения')),
-                ('category', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='titles', to='api.category', verbose_name='Категории')),
-                ('genre', models.ManyToManyField(blank=True, help_text='Удерживайте Ctrl для выбора нескольких вариантов', null=True, related_name='titles', to='api.Genre', verbose_name='Жанры')),
+                ('text', models.TextField(verbose_name='Текст отзыва')),
+                ('score', models.IntegerField(choices=[(1, '1'), (2, '2'), (3, '3'), (4, '4'), (5, '5'), (6, '6'), (7, '7'), (8, '8'), (9, '9'), (10, '10')], verbose_name='Оценка')),
+                ('pub_date', models.DateTimeField(auto_now_add=True, verbose_name='Дата публикации')),
+                ('author', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='reviews', to=settings.AUTH_USER_MODEL, verbose_name='Автор')),
+                ('title', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='reviews', to='api.title', verbose_name='Произведение')),
             ],
             options={
-                'ordering': ['name'],
+                'verbose_name': 'Отзыв',
+                'verbose_name_plural': 'Отзывы',
             },
+        ),
         migrations.CreateModel(
+            name='Comment',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('text', models.TextField(verbose_name='Текст комментария')),
+                ('pub_date', models.DateTimeField(auto_now_add=True, verbose_name='Дата публикации')),
+                ('author', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='comments', to=settings.AUTH_USER_MODEL, verbose_name='Автор')),
+                ('review', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='comments', to='reviews.review', verbose_name='Отзыв')),
+            ],
+            options={
+                'verbose_name': 'Комментарий',
+                'verbose_name_plural': 'Комментарии',
+            },
+        ),
+        migrations.AddConstraint(
+            # model_name='review',
+            # constraint=models.UniqueConstraint(fields=('title', 'author'), name='unique_review'),
             name='User',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
@@ -57,12 +61,12 @@ class Migration(migrations.Migration):
                 ('is_staff', models.BooleanField(default=False, help_text='Designates whether the user can log into this admin site.', verbose_name='staff status')),
                 ('is_active', models.BooleanField(default=True, help_text='Designates whether this user should be treated as active. Unselect this instead of deleting accounts.', verbose_name='active')),
                 ('date_joined', models.DateTimeField(default=django.utils.timezone.now, verbose_name='date joined')),
-                ('email', models.EmailField(max_length=254, unique=True, verbose_name='Email')),
+                ('email', models.EmailField(max_length=254, verbose_name='Email')),
                 ('bio', models.TextField(blank=True, verbose_name='Biography')),
                 ('role', models.CharField(choices=[('user', 'User'), ('moderator', 'Moderator'), ('admin', 'Admin')], default='user', max_length=10, verbose_name='Role')),
-                ('confirmation_code', models.CharField(blank=True, max_length=16, verbose_name='Confirmation Code')),
-                ('groups', models.ManyToManyField(blank=True, help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.', related_name='user_set', related_query_name='user', to='auth.Group', verbose_name='groups')),
-                ('user_permissions', models.ManyToManyField(blank=True, help_text='Specific permissions for this user.', related_name='user_set', related_query_name='user', to='auth.Permission', verbose_name='user permissions')),
+                ('confirmation_code', models.CharField(blank=True, max_length=10, verbose_name='Confirmation Code')),
+                ('groups', models.ManyToManyField(blank=True, help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.', related_name='user_set', related_query_name='user', to='auth.group', verbose_name='groups')),
+                ('user_permissions', models.ManyToManyField(blank=True, help_text='Specific permissions for this user.', related_name='user_set', related_query_name='user', to='auth.permission', verbose_name='user permissions')),
             ],
             options={
                 'ordering': ['username'],

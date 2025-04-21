@@ -29,7 +29,7 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = ('id', 'review', 'text', 'author', 'pub_date')
         read_only_fields = ('id', 'author', 'pub_date', 'review')
 
-        
+
 class UserSerializer(serializers.ModelSerializer):
     """Сериализатор для модели User. Для всех пользователей."""
     username = serializers.RegexField(
@@ -185,7 +185,9 @@ class TitleSerializer(serializers.ModelSerializer):
     def validate_year(self, value):
         current_year = date.today().year
         if value > current_year:
-            raise serializers.ValidationError('Год произведения не может быть в будущем.')
+            raise serializers.ValidationError(
+                'Год произведения не может быть в будущем.'
+            )
         return value
 
     # def create(self, validated_data):

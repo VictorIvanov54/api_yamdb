@@ -64,8 +64,8 @@ class User(AbstractUser):
             secrets.choice('0123456789') for _ in range(6)
         )
         self.save()
-        
-        
+
+
 class Genre(models.Model):
     """Модель Жанров произведений."""
     name = models.CharField('Название жанра произведения', max_length=256)
@@ -117,7 +117,7 @@ class Title(models.Model):
 
 class Review(models.Model):
     title = models.ForeignKey(
-        'api.Title',
+        Title,
         on_delete=models.CASCADE,
         related_name='reviews',
         verbose_name='Произведение'
