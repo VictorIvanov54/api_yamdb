@@ -13,7 +13,8 @@ from rest_framework.views import APIView
 from reviews.models import Genre, Category, Title, Comment, Review
 from api.serializers import (
     SignupSerializer, TokenObtainSerializer, UserSerializer,
-    GenreSerializer, CategorySerializer, TitleSerializer,
+    GenreSerializer, CategorySerializer,  # TitleSerializer,
+    TitleReadSerializer, TitleWriteSerializer,
     ReviewSerializer, CommentSerializer
 )
 from .permissions import IsAdminOrReadOnly, IsAdmin, IsAuthorOrModeratorOrAdmin
@@ -116,7 +117,7 @@ class GenreViewSet(viewsets.ModelViewSet):
     serializer_class = GenreSerializer
     permission_classes = (IsAdminOrReadOnly, )
     lookup_field = 'slug'
-    pagination_class = PageNumberPagination
+    # pagination_class = PageNumberPagination
     filter_backends = (filters.SearchFilter, )
     search_fields = ('name', )
 
@@ -127,7 +128,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
     serializer_class = CategorySerializer
     permission_classes = (IsAdminOrReadOnly, )
     lookup_field = 'slug'
-    pagination_class = PageNumberPagination
+    # pagination_class = PageNumberPagination
     filter_backends = (filters.SearchFilter, )
     search_fields = ('name', )
 
@@ -135,16 +136,21 @@ class CategoryViewSet(viewsets.ModelViewSet):
 class TitleViewSet(viewsets.ModelViewSet):
     """Вьюсет модели Произведений."""
     queryset = Title.objects.all()
-    serializer_class = TitleSerializer
+    # serializer_class = TitleSerializer
     permission_classes = (IsAdminOrReadOnly, )
-    pagination_class = PageNumberPagination
+    # pagination_class = PageNumberPagination
     filter_backends = (DjangoFilterBackend, )
     filterset_fields = ('category__slug', 'genre__slug', 'name', 'year')
+
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve']:
+            return TitleReadSerializer
+        return TitleWriteSerializer
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = IsAuthorOrModeratorOrAdmin
+    permission_classes = (IsAuthorOrModeratorOrAdmin, )
     pagination_class = PageNumberPagination
 
     def get_queryset(self):
@@ -162,7 +168,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = IsAuthorOrModeratorOrAdmin
+    permission_classes = (IsAuthorOrModeratorOrAdmin, )
     pagination_class = PageNumberPagination
 
     def get_queryset(self):

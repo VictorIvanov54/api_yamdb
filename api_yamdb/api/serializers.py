@@ -162,8 +162,19 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ('name', 'slug', 'titles')
 
 
-class TitleSerializer(serializers.ModelSerializer):
-    """Сериализатор модели Произведений."""
+class TitleReadSerializer(serializers.ModelSerializer):
+    genre = GenreSerializer(many=True, read_only=True)
+    category = CategorySerializer(read_only=True)
+    rating = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Title
+        fields = (
+            'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
+        )
+
+
+class TitleWriteSerializer(serializers.ModelSerializer):
     genre = serializers.SlugRelatedField(
         many=True,
         slug_field='slug',
@@ -190,13 +201,27 @@ class TitleSerializer(serializers.ModelSerializer):
             )
         return value
 
-    # def create(self, validated_data):
-    #     if ('genre' or 'category') not in self.initial_data:
-    #         title = Title.objects.create(**validated_data)
-    #         return title
-
     def get_rating(self, obj):
         sum = obj.reviews.aggregate(Sum('score'))['score__sum']
         if sum:
             return sum / obj.reviews.count()
         return 0
+
+
+# class TitleSerializer(serializers.ModelSerializer):
+#     """Сериализатор модели Произведений."""
+#     genre = serializers.SlugRelatedField(
+#         many=True,
+#         slug_field='slug',
+#         queryset=Genre.objects.all()
+#     )
+#     category = serializers.SlugRelatedField(
+#         slug_field='slug',
+#         queryset=Category.objects.all()
+#     )
+#     rating = serializers.SerializerMethodField()
+
+    # def create(self, validated_data):
+    #     if ('genre' or 'category') not in self.initial_data:
+    #         title = Title.objects.create(**validated_data)
+    #         return title

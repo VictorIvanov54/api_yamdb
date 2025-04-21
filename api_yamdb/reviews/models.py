@@ -68,8 +68,10 @@ class User(AbstractUser):
 
 class Genre(models.Model):
     """Модель Жанров произведений."""
-    name = models.CharField('Название жанра произведения', max_length=256)
-    slug = models.SlugField(max_length=50, unique=True)
+    name = models.CharField(
+        'Название жанра произведения', max_length=settings.MAX_LENGTH_NAME
+    )
+    slug = models.SlugField(max_length=settings.MAX_LENGTH_SLUG, unique=True)
 
     def __str__(self):
         return self.name
@@ -77,8 +79,10 @@ class Genre(models.Model):
 
 class Category(models.Model):
     """Модель Категорий произведений."""
-    name = models.CharField('Название категории произведения', max_length=256)
-    slug = models.SlugField(max_length=50, unique=True)
+    name = models.CharField(
+        'Название категории произведения', max_length=settings.MAX_LENGTH_NAME
+    )
+    slug = models.SlugField(max_length=settings.MAX_LENGTH_SLUG, unique=True)
 
     def __str__(self):
         return self.name
@@ -86,26 +90,26 @@ class Category(models.Model):
 
 class Title(models.Model):
     """Модель Произведений."""
-    name = models.CharField('Название произведения', max_length=256)
+    name = models.CharField('Название произведения', max_length=settings.MAX_LENGTH_NAME)
     year = models.PositiveIntegerField('Год выпуска', )
-    rating = models.IntegerField('Рейтинг на основе отзывов', default=None)
+    # rating = models.IntegerField('Рейтинг на основе отзывов', default=None)
     description = models.TextField('Описание произведения', blank=True)
     genre = models.ManyToManyField(
         Genre,
-        verbose_name='Жанры',
         blank=True,
-        null=True,
+        # null=True,
         help_text='Удерживайте Ctrl для выбора нескольких вариантов',
         # on_delete=models.SET_NULL,
         related_name='titles',
+        verbose_name='Жанры',
     )
     category = models.ForeignKey(
         Category,
-        verbose_name='Категории',
-        blank=True,
-        null=True,
         on_delete=models.SET_NULL,
+        # blank=True,
+        null=True,
         related_name='titles',
+        verbose_name='Категории',
     )
 
     class Meta:
