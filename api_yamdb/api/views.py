@@ -1,5 +1,6 @@
 """Модуль вьюсетов."""
 from django.contrib.auth import get_user_model
+from django.forms import ValidationError
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
 
@@ -7,7 +8,7 @@ from rest_framework import permissions, status, viewsets, filters
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework.views import APIView
 
 from reviews.models import Genre, Category, Title, Comment, Review
@@ -150,7 +151,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminOrReadOnly, )
     # pagination_class = PageNumberPagination
     filter_backends = (DjangoFilterBackend, )
-    filterset_fields = ('category__slug', 'genre__slug', 'name', 'year')
+    filterset_fields = ('category__slug', 'genre__slug', 'name', 'year',)
 
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
@@ -160,8 +161,8 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = (IsAuthorOrModeratorOrAdmin, )
-    # pagination_class = PageNumberPagination
+    permission_classes = (IsAuthenticatedOrReadOnly, IsAuthorOrModeratorOrAdmin)
+    pagination_class = PageNumberPagination
 
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')
@@ -173,7 +174,18 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         title_id = self.kwargs.get('title_id')
         title = get_object_or_404(Title, pk=title_id)
+
+        if Review.objects.filter(author=self.request.user, title=title).exists():
+            raise ValidationError("Вы уже оставили отзыв на это произведение.")
+
         serializer.save(author=self.request.user, title=title)
+
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request, *args, **kwargs)
+        except ValidationError as e:
+            # Используем str(e) для получения сообщения об ошибке
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     def update(self, request, *args, **kwargs):
         if request.method == 'PUT':
@@ -183,7 +195,8 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = (IsAuthorOrModeratorOrAdmin, )
+    permission_classes = [IsAuthenticatedOrReadOnly,
+                          IsAuthorOrModeratorOrAdmin]
     pagination_class = PageNumberPagination
 
     def get_queryset(self):
@@ -197,3 +210,8 @@ class CommentViewSet(viewsets.ModelViewSet):
         review_id = self.kwargs.get('review_id')
         review = get_object_or_404(Review, pk=review_id)
         serializer.save(author=self.request.user, review=review)
+
+    def update(self, request, *args, **kwargs):
+        if request.method == 'PUT':
+            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        return super().update(request, *args, **kwargs)
