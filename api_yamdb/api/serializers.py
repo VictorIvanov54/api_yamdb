@@ -8,6 +8,7 @@ from django.db.models import Sum
 from rest_framework import serializers
 
 from reviews.models import Genre, Category, Title, Review, Comment
+from django.shortcuts import get_object_or_404
 
 User = get_user_model()
 
