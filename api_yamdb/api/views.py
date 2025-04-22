@@ -124,8 +124,8 @@ class GenreViewSet(viewsets.ModelViewSet):
     search_fields = ('name', )
     http_method_names = ['get', 'post', 'delete']   # !!!! Добавила
 
-    def retrieve(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)   # !!! Добавила
+    def retrieve(self, request, *args, **kwargs):   # !!! Добавила
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -137,9 +137,9 @@ class CategoryViewSet(viewsets.ModelViewSet):
     # pagination_class = PageNumberPagination
     filter_backends = (filters.SearchFilter, )
     search_fields = ('name', )
-    http_method_names = ['get', 'post', 'delete']
+    http_method_names = ['get', 'post', 'delete']   # !!!! Добавила
 
-    def retrieve(self, request, *args, **kwargs):
+    def retrieve(self, request, *args, **kwargs):   # !!!! Добавила
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
