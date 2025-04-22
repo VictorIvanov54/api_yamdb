@@ -19,8 +19,10 @@ from api.serializers import (
     TitleReadSerializer, TitleWriteSerializer,
     ReviewSerializer, CommentSerializer
 )
-from .permissions import IsAdminOrReadOnly, IsAdmin, IsAuthorOrModeratorOrAdmin
-from .utils import send_confirmation_email
+from api.permissions import (
+    IsAdminOrReadOnly, IsAdmin, IsAuthorOrModeratorOrAdmin
+)
+from api.utils import send_confirmation_email
 from api.filters import TitleFilter
 
 User = get_user_model()
