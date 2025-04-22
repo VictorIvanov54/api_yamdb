@@ -93,7 +93,8 @@ class Category(models.Model):
 
 class Title(models.Model):
     """Модель Произведений."""
-    name = models.CharField('Название произведения', max_length=settings.MAX_LENGTH_NAME)
+    name = models.CharField('Название произведения',
+                            max_length=settings.MAX_LENGTH_NAME)
     year = models.PositiveIntegerField('Год выпуска', )
     description = models.TextField('Описание произведения', blank=True)
     genre = models.ManyToManyField(
