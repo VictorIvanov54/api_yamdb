@@ -95,21 +95,17 @@ class Title(models.Model):
     """Модель Произведений."""
     name = models.CharField('Название произведения', max_length=settings.MAX_LENGTH_NAME)
     year = models.PositiveIntegerField('Год выпуска', )
-    # rating = models.IntegerField('Рейтинг на основе отзывов', default=None)
     description = models.TextField('Описание произведения', blank=True)
     genre = models.ManyToManyField(
         Genre,
         blank=True,
-        # null=True,
         help_text='Удерживайте Ctrl для выбора нескольких вариантов',
-        # on_delete=models.SET_NULL,
         related_name='titles',
         verbose_name='Жанры',
     )
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
-        # blank=True,
         null=True,
         related_name='titles',
         verbose_name='Категории',
@@ -123,6 +119,7 @@ class Title(models.Model):
 
 
 class Review(models.Model):
+    """Модель отзывов."""
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
@@ -150,6 +147,7 @@ class Review(models.Model):
 
 
 class Comment(models.Model):
+    """Модель комментариев."""
     review = models.ForeignKey(
         Review,
         on_delete=models.CASCADE,

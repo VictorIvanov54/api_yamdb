@@ -153,20 +153,18 @@ class TokenObtainSerializer(serializers.Serializer):
 
 class GenreSerializer(serializers.ModelSerializer):
     """Сериализатор модели Жанров произведений."""
-    # titles = serializers.StringRelatedField(many=True, read_only=True)     !!!! Закомментировала - в документации не описывается поле
 
     class Meta:
         model = Genre
-        fields = ('name', 'slug')   # , 'titles')     !!!! Закомментировала
+        fields = ('name', 'slug')
 
 
 class CategorySerializer(serializers.ModelSerializer):
     """Сериализатор модели Категорий произведений."""
-    # titles = serializers.StringRelatedField(many=True, read_only=True)   !!!! Закомментировала - тоже не описывается
 
     class Meta:
         model = Category
-        fields = ('name', 'slug')  # , 'titles')   # !!!! Закомментировала
+        fields = ('name', 'slug')
 
 
 class TitleReadSerializer(serializers.ModelSerializer):
@@ -213,22 +211,3 @@ class TitleWriteSerializer(serializers.ModelSerializer):
         if sum:
             return sum / obj.reviews.count()
         return 0
-
-
-# class TitleSerializer(serializers.ModelSerializer):
-#     """Сериализатор модели Произведений."""
-#     genre = serializers.SlugRelatedField(
-#         many=True,
-#         slug_field='slug',
-#         queryset=Genre.objects.all()
-#     )
-#     category = serializers.SlugRelatedField(
-#         slug_field='slug',
-#         queryset=Category.objects.all()
-#     )
-#     rating = serializers.SerializerMethodField()
-
-    # def create(self, validated_data):
-    #     if ('genre' or 'category') not in self.initial_data:
-    #         title = Title.objects.create(**validated_data)
-    #         return title

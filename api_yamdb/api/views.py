@@ -1,5 +1,6 @@
 """Модуль вьюсетов."""
 from django.contrib.auth import get_user_model
+from django.db.models import Avg
 from django.forms import ValidationError
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
@@ -14,7 +15,7 @@ from rest_framework.views import APIView
 from reviews.models import Genre, Category, Title, Comment, Review
 from api.serializers import (
     SignupSerializer, TokenObtainSerializer, UserSerializer,
-    GenreSerializer, CategorySerializer,  # TitleSerializer,
+    GenreSerializer, CategorySerializer,
     TitleReadSerializer, TitleWriteSerializer,
     ReviewSerializer, CommentSerializer
 )
@@ -123,7 +124,7 @@ class GenreViewSet(viewsets.ModelViewSet):
     lookup_field = 'slug'
     filter_backends = (filters.SearchFilter, )
     search_fields = ('name', 'slug')
-    http_method_names = ['get', 'post', 'delete']  
+    http_method_names = ['get', 'post', 'delete']
 
     def retrieve(self, request, *args, **kwargs):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
@@ -138,18 +139,19 @@ class CategoryViewSet(viewsets.ModelViewSet):
     filter_backends = (filters.SearchFilter, )
     search_fields = ('name', )
     http_method_names = ['get', 'post', 'delete']
+
     def retrieve(self, request, *args, **kwargs):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     """Вьюсет модели Произведений."""
-    queryset = Title.objects.all()
+    queryset = Title.objects.annotate(rating=Avg('reviews__score'))
     permission_classes = (IsAdminOrReadOnly, )
     http_method_names = ['get', 'post', 'delete', "patch"]
     filter_backends = (DjangoFilterBackend, )
     filterset_class = TitleFilter
-    
+
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
             return TitleReadSerializer
@@ -157,8 +159,10 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
+    """Вьюсет для модели Отзывов."""
     serializer_class = ReviewSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly, IsAuthorOrModeratorOrAdmin)
+    permission_classes = (IsAuthenticatedOrReadOnly,
+                          IsAuthorOrModeratorOrAdmin)
     pagination_class = PageNumberPagination
 
     def get_queryset(self):
@@ -172,7 +176,8 @@ class ReviewViewSet(viewsets.ModelViewSet):
         title_id = self.kwargs.get('title_id')
         title = get_object_or_404(Title, pk=title_id)
 
-        if Review.objects.filter(author=self.request.user, title=title).exists():
+        if Review.objects.filter(author=self.request.user,
+                                 title=title).exists():
             raise ValidationError("Вы уже оставили отзыв на это произведение.")
 
         serializer.save(author=self.request.user, title=title)
@@ -182,7 +187,8 @@ class ReviewViewSet(viewsets.ModelViewSet):
             return super().create(request, *args, **kwargs)
         except ValidationError as e:
             # Используем str(e) для получения сообщения об ошибке
-            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": str(e)},
+                            status=status.HTTP_400_BAD_REQUEST)
 
     def update(self, request, *args, **kwargs):
         if request.method == 'PUT':
@@ -191,6 +197,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
+    """Вьюсет для модели Комментариев."""
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticatedOrReadOnly,
                           IsAuthorOrModeratorOrAdmin]
