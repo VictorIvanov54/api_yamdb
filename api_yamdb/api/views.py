@@ -28,6 +28,7 @@ class SignupView(APIView):
     Класс обрабатывает регистрацию пользователя и отправляет код подтверждения
     на указанный email.
     """
+
     permission_classes = (AllowAny,)
 
     def post(self, request):
@@ -55,6 +56,7 @@ class TokenObtainView(APIView):
     Класс обрабатывает JWT access tokens для пользователей. Пользователи
     должны предоставить зарегистрированный username и confirmation_code.
     """
+
     permission_classes = (AllowAny,)
 
     def post(self, request, *args, **kwargs):
@@ -120,6 +122,10 @@ class GenreViewSet(viewsets.ModelViewSet):
     # pagination_class = PageNumberPagination
     filter_backends = (filters.SearchFilter, )
     search_fields = ('name', )
+    http_method_names = ['get', 'post', 'delete']   # !!!! Добавила
+
+    def retrieve(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)   # !!! Добавила
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -131,6 +137,10 @@ class CategoryViewSet(viewsets.ModelViewSet):
     # pagination_class = PageNumberPagination
     filter_backends = (filters.SearchFilter, )
     search_fields = ('name', )
+    http_method_names = ['get', 'post', 'delete']
+
+    def retrieve(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 class TitleViewSet(viewsets.ModelViewSet):

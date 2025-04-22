@@ -155,11 +155,11 @@ class GenreSerializer(serializers.ModelSerializer):
 
 class CategorySerializer(serializers.ModelSerializer):
     """Сериализатор модели Категорий произведений."""
-    titles = serializers.StringRelatedField(many=True, read_only=True)
+    # titles = serializers.StringRelatedField(many=True, read_only=True)   !!!! Закомментировала
 
     class Meta:
         model = Category
-        fields = ('name', 'slug', 'titles')
+        fields = ('name', 'slug')  # , 'titles')   # !!!! Закомментировала
 
 
 class TitleReadSerializer(serializers.ModelSerializer):

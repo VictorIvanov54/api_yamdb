@@ -84,6 +84,9 @@ class Category(models.Model):
     )
     slug = models.SlugField(max_length=settings.MAX_LENGTH_SLUG, unique=True)
 
+    class Meta:
+        ordering = ['name']
+
     def __str__(self):
         return self.name
 
