@@ -19,6 +19,7 @@ from api.serializers import (
 )
 from .permissions import IsAdminOrReadOnly, IsAdmin, IsAuthorOrModeratorOrAdmin
 from .utils import send_confirmation_email
+from api.filters import TitleFilter
 
 User = get_user_model()
 
@@ -121,7 +122,7 @@ class GenreViewSet(viewsets.ModelViewSet):
     lookup_field = 'slug'
     # pagination_class = PageNumberPagination
     filter_backends = (filters.SearchFilter, )
-    search_fields = ('name', )
+    search_fields = ('name', 'slug')
     http_method_names = ['get', 'post', 'delete']   # !!!! Добавила, чтобы описать какие методы разрешены
 
     def retrieve(self, request, *args, **kwargs):   # !!! Добавила, чтобы не разрешать метод GET для детализации жанра
@@ -148,10 +149,11 @@ class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     # serializer_class = TitleSerializer
     permission_classes = (IsAdminOrReadOnly, )
-    # pagination_class = PageNumberPagination
+    http_method_names = ['get', 'post', 'delete', "patch"]
     filter_backends = (DjangoFilterBackend, )
-    filterset_fields = ('category__slug', 'genre__slug', 'name', 'year')
-
+    filterset_class = TitleFilter
+    # filterset_fields = ('category__slug', 'genre__slug', 'name', 'year')
+    
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
             return TitleReadSerializer
