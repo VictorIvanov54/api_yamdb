@@ -14,9 +14,10 @@ router.register('genres', GenreViewSet, basename='genres')
 router.register('categories', CategoryViewSet, basename='categories')
 router.register('titles', TitleViewSet, basename='titles')
 router.register(r'titles/(?P<title_id>\d+)/reviews', ReviewViewSet,
-                basename='review')
-router.register(r'reviews/(?P<review_id>[^/.]+)/comments',
-                CommentViewSet, basename='comment')
+                basename='reviews')
+router.register(
+    r'titles/(?P<title_id>\d+)/reviews/(?P<review_id>\d+)/comments',
+    CommentViewSet, basename='comments')
 
 urlpatterns = [
     path('auth/signup/', SignupView.as_view(), name='signup'),

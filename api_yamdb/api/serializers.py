@@ -8,7 +8,7 @@ from django.db.models import Sum
 from rest_framework import serializers
 
 from reviews.models import Genre, Category, Title, Review, Comment
-from django.shortcuts import get_object_or_404
+
 
 User = get_user_model()
 
@@ -29,6 +29,12 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ('id', 'review', 'text', 'author', 'pub_date')
         read_only_fields = ('id', 'author', 'pub_date', 'review')
+
+    def validate_text(self, value):
+        if not value.strip():
+            raise serializers.ValidationError(
+                "Комментарий не может быть пустым.")
+        return value
 
 
 class UserSerializer(serializers.ModelSerializer):
