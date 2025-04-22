@@ -121,12 +121,11 @@ class GenreViewSet(viewsets.ModelViewSet):
     serializer_class = GenreSerializer
     permission_classes = (IsAdminOrReadOnly, )
     lookup_field = 'slug'
-    # pagination_class = PageNumberPagination
     filter_backends = (filters.SearchFilter, )
     search_fields = ('name', 'slug')
-    http_method_names = ['get', 'post', 'delete']   # !!!! Добавила, чтобы описать какие методы разрешены
+    http_method_names = ['get', 'post', 'delete']  
 
-    def retrieve(self, request, *args, **kwargs):   # !!! Добавила, чтобы не разрешать метод GET для детализации жанра
+    def retrieve(self, request, *args, **kwargs):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
@@ -136,24 +135,20 @@ class CategoryViewSet(viewsets.ModelViewSet):
     serializer_class = CategorySerializer
     permission_classes = (IsAdminOrReadOnly, )
     lookup_field = 'slug'
-    # pagination_class = PageNumberPagination
     filter_backends = (filters.SearchFilter, )
     search_fields = ('name', )
-    http_method_names = ['get', 'post', 'delete']   # !!!! Добавила, чтобы описать какие методы разрешены
-
-    def retrieve(self, request, *args, **kwargs):   # !!! Добавила, чтобы не разрешать метод GET для детализации категории
+    http_method_names = ['get', 'post', 'delete']
+    def retrieve(self, request, *args, **kwargs):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     """Вьюсет модели Произведений."""
     queryset = Title.objects.all()
-    # serializer_class = TitleSerializer
     permission_classes = (IsAdminOrReadOnly, )
     http_method_names = ['get', 'post', 'delete', "patch"]
     filter_backends = (DjangoFilterBackend, )
     filterset_class = TitleFilter
-    # filterset_fields = ('category__slug', 'genre__slug', 'name', 'year')
     
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
