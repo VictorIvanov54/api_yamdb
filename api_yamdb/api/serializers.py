@@ -146,16 +146,16 @@ class TokenObtainSerializer(serializers.Serializer):
 
 class GenreSerializer(serializers.ModelSerializer):
     """Сериализатор модели Жанров произведений."""
-    # titles = serializers.StringRelatedField(many=True, read_only=True)     !!!! Закомментировала
+    # titles = serializers.StringRelatedField(many=True, read_only=True)     !!!! Закомментировала - в документации не описывается поле
 
     class Meta:
         model = Genre
-        fields = ('name', 'slug')   #, 'titles')     !!!! Закомментировала
+        fields = ('name', 'slug')   # , 'titles')     !!!! Закомментировала
 
 
 class CategorySerializer(serializers.ModelSerializer):
     """Сериализатор модели Категорий произведений."""
-    # titles = serializers.StringRelatedField(many=True, read_only=True)   !!!! Закомментировала
+    # titles = serializers.StringRelatedField(many=True, read_only=True)   !!!! Закомментировала - тоже не описывается
 
     class Meta:
         model = Category
