@@ -1,16 +1,10 @@
 """Модуль сериализаторов проекта."""
-from datetime import date
-
 from django.conf import settings
-from django.contrib.auth import get_user_model
 from django.db.models import Sum
 
 from rest_framework import serializers
 
-from reviews.models import Genre, Category, Title, Review, Comment
-
-
-User = get_user_model()
+from reviews.models import User, Genre, Category, Title, Review, Comment
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -33,7 +27,7 @@ class CommentSerializer(serializers.ModelSerializer):
     def validate_text(self, value):
         if not value.strip():
             raise serializers.ValidationError(
-                "Комментарий не может быть пустым.")
+                'Комментарий не может быть пустым.')
         return value
 
 
@@ -189,7 +183,7 @@ class TitleWriteSerializer(serializers.ModelSerializer):
         slug_field='slug',
         queryset=Category.objects.all()
     )
-    rating = serializers.SerializerMethodField()
+    rating = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Title
@@ -197,17 +191,3 @@ class TitleWriteSerializer(serializers.ModelSerializer):
             'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
         )
         depth = 1
-
-    def validate_year(self, value):
-        current_year = date.today().year
-        if value > current_year:
-            raise serializers.ValidationError(
-                'Год произведения не может быть в будущем.'
-            )
-        return value
-
-    def get_rating(self, obj):
-        sum = obj.reviews.aggregate(Sum('score'))['score__sum']
-        if sum:
-            return sum / obj.reviews.count()
-        return 0

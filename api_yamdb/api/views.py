@@ -1,5 +1,4 @@
 """Модуль вьюсетов."""
-from django.contrib.auth import get_user_model
 from django.db.models import Avg
 from django.forms import ValidationError
 from django_filters.rest_framework import DjangoFilterBackend
@@ -12,20 +11,19 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework.views import APIView
 
-from reviews.models import Genre, Category, Title, Comment, Review
+from api.filters import TitleFilter
+from api.mixins import ListCreateDeleteViewSet
+from api.permissions import (
+    IsAdminOrReadOnly, IsAdmin, IsAuthorOrModeratorOrAdmin
+)
 from api.serializers import (
     SignupSerializer, TokenObtainSerializer, UserSerializer,
     GenreSerializer, CategorySerializer,
     TitleReadSerializer, TitleWriteSerializer,
     ReviewSerializer, CommentSerializer
 )
-from api.permissions import (
-    IsAdminOrReadOnly, IsAdmin, IsAuthorOrModeratorOrAdmin
-)
 from api.utils import send_confirmation_email
-from api.filters import TitleFilter
-
-User = get_user_model()
+from reviews.models import User, Genre, Category, Title, Comment, Review
 
 
 class SignupView(APIView):
@@ -118,7 +116,7 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-class GenreViewSet(viewsets.ModelViewSet):
+class GenreViewSet(ListCreateDeleteViewSet):
     """Вьюсет модели Жанров."""
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
@@ -126,13 +124,9 @@ class GenreViewSet(viewsets.ModelViewSet):
     lookup_field = 'slug'
     filter_backends = (filters.SearchFilter, )
     search_fields = ('name', 'slug')
-    http_method_names = ['get', 'post', 'delete']
-
-    def retrieve(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
-class CategoryViewSet(viewsets.ModelViewSet):
+class CategoryViewSet(ListCreateDeleteViewSet):
     """Вьюсет модели Категорий."""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
@@ -140,15 +134,15 @@ class CategoryViewSet(viewsets.ModelViewSet):
     lookup_field = 'slug'
     filter_backends = (filters.SearchFilter, )
     search_fields = ('name', )
-    http_method_names = ['get', 'post', 'delete']
-
-    def retrieve(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     """Вьюсет модели Произведений."""
-    queryset = Title.objects.annotate(rating=Avg('reviews__score'))
+    queryset = (
+        Title.objects.all()
+        .annotate(rating=Avg('reviews__score'))
+        .order_by('name')
+    )
     permission_classes = (IsAdminOrReadOnly, )
     http_method_names = ['get', 'post', 'delete', "patch"]
     filter_backends = (DjangoFilterBackend, )

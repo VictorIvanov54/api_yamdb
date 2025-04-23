@@ -1,4 +1,5 @@
 """Модуль моделей проекта."""
+from datetime import date
 import secrets
 
 from django.conf import settings
@@ -73,6 +74,9 @@ class Genre(models.Model):
     )
     slug = models.SlugField(max_length=settings.MAX_LENGTH_SLUG, unique=True)
 
+    class Meta:
+        ordering = ('name',)
+
     def __str__(self):
         return self.name
 
@@ -85,7 +89,7 @@ class Category(models.Model):
     slug = models.SlugField(max_length=settings.MAX_LENGTH_SLUG, unique=True)
 
     class Meta:
-        ordering = ['name']
+        ordering = ('name',)
 
     def __str__(self):
         return self.name
@@ -95,7 +99,7 @@ class Title(models.Model):
     """Модель Произведений."""
     name = models.CharField('Название произведения',
                             max_length=settings.MAX_LENGTH_NAME)
-    year = models.PositiveIntegerField('Год выпуска', )
+    year = models.SmallIntegerField('Год выпуска', )
     description = models.TextField('Описание произведения', blank=True)
     genre = models.ManyToManyField(
         Genre,
@@ -113,7 +117,15 @@ class Title(models.Model):
     )
 
     class Meta:
-        ordering = ['name']
+        ordering = ('name',)
+
+    def validate_year(self, value):
+        current_year = date.today().year
+        if value > current_year:
+            raise ValidationError(
+                'Год произведения не может быть в будущем.'
+            )
+        return value
 
     def __str__(self):
         return self.name
@@ -128,8 +140,9 @@ class Review(models.Model):
         verbose_name='Произведение'
     )
     text = models.TextField('Текст отзыва')
-    score = models.IntegerField('Оценка',
-                                choices=[(i, str(i)) for i in range(1, 11)])
+    score = models.PositiveSmallIntegerField(
+        'Оценка', choices=[(i, str(i)) for i in range(1, 11)]
+    )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -139,6 +152,7 @@ class Review(models.Model):
     pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
 
     class Meta:
+        ordering = ('-pub_date',)
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
         unique_together = ('author', 'title')
@@ -165,8 +179,9 @@ class Comment(models.Model):
     pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
 
     class Meta:
+        ordering = ('-pub_date',)
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
 
     def __str__(self):
-        return self.text[:50]
+        return self.text[:settings.MAX_LENGTH_BEGINNING_TEXT]
