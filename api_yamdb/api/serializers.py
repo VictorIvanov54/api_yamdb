@@ -1,10 +1,10 @@
 """Модуль сериализаторов проекта."""
 from django.conf import settings
-from django.db.models import Sum
 
 from rest_framework import serializers
 
 from reviews.models import User, Genre, Category, Title, Review, Comment
+from .mixins import UserValidationMixin
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -31,7 +31,7 @@ class CommentSerializer(serializers.ModelSerializer):
         return value
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializer(UserValidationMixin, serializers.ModelSerializer):
     """Сериализатор для модели User. Для всех пользователей."""
     username = serializers.RegexField(
         regex=r'^[\w.@+-]+\Z',
@@ -72,21 +72,6 @@ class UserSerializer(serializers.ModelSerializer):
         if request and not request.user.is_admin:
             fields['role'].read_only = True
         return fields
-
-    def validate_username(self, value):
-        """Функция запрещает задавать имя 'me' в поле 'username'."""
-        if value.lower() == 'me':
-            raise serializers.ValidationError('Имя "me" запрещено.')
-        if User.objects.filter(username=value).exists():
-            raise serializers.ValidationError(
-                'Это имя пользователя уже используется.'
-            )
-        return value
-
-    def validate_email(self, value):
-        if User.objects.filter(email=value).exists():
-            raise serializers.ValidationError('Этот email уже используется.')
-        return value
 
 
 class SignupSerializer(serializers.Serializer):

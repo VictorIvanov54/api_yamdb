@@ -1,11 +1,14 @@
 """Модуль моделей проекта."""
 from datetime import date
 import secrets
+import string
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models
+
+from .validators import validate_username
 
 
 class User(AbstractUser):
@@ -20,6 +23,8 @@ class User(AbstractUser):
         (ADMIN, 'Admin'),
     ]
 
+    role_max_length = max(len(role[0]) for role in ROLE_CHOICES)
+
     email = models.EmailField(
         max_length=settings.MAX_LENGTH,
         unique=True,
@@ -30,7 +35,7 @@ class User(AbstractUser):
         verbose_name='Biography',
     )
     role = models.CharField(
-        max_length=settings.MAX_LENGTH_ROLE,
+        max_length=role_max_length,
         choices=ROLE_CHOICES,
         default=USER,
         verbose_name='Role',
@@ -57,12 +62,11 @@ class User(AbstractUser):
 
     def clean(self):
         super().clean()
-        if self.username.lower() == 'me':
-            raise ValidationError('Username "me" не разрешено.')
+        validate_username(self.username)
 
-    def set_confirmation_code(self):
+    def set_confirmation_code(self, length=6):
         self.confirmation_code = ''.join(
-            secrets.choice('0123456789') for _ in range(6)
+            secrets.choice(string.digits) for _ in range(length)
         )
         self.save()
 
