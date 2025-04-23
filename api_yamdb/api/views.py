@@ -162,21 +162,20 @@ class ReviewViewSet(viewsets.ModelViewSet):
     pagination_class = PageNumberPagination
     http_method_names = ['get', 'post', 'patch', 'delete']
 
-    def get_queryset(self):
+    def get_title(self):
+        """Возвращает объект Title по ID из URL или вызывает 404."""
         title_id = self.kwargs.get('title_id')
-        if title_id is not None:
-            get_object_or_404(Title, pk=title_id)
-            return Review.objects.filter(title__id=title_id)
-        return Review.objects.all()
+        return get_object_or_404(Title, pk=title_id)
+
+    def get_queryset(self):
+        title = self.get_title()
+        return Review.objects.filter(title=title)
 
     def perform_create(self, serializer):
-        title_id = self.kwargs.get('title_id')
-        title = get_object_or_404(Title, pk=title_id)
-
+        title = self.get_title()
         if Review.objects.filter(author=self.request.user,
                                  title=title).exists():
             raise ValidationError("Вы уже оставили отзыв на это произведение.")
-
         serializer.save(author=self.request.user, title=title)
 
     def create(self, request, *args, **kwargs):
@@ -194,20 +193,15 @@ class CommentViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly,
                           IsAuthorOrModeratorOrAdmin]
     pagination_class = PageNumberPagination
+    http_method_names = ['get', 'post', 'patch', 'delete']
+
+    def get_review(self):
+        """Возвращает title_id из URL параметров или вызывает исключение."""
+        review_id = self.kwargs.get('review_id')
+        return get_object_or_404(Review, pk=review_id)
 
     def get_queryset(self):
-        review_id = self.kwargs.get('review_id')
-        if review_id is not None:
-            get_object_or_404(Review, pk=review_id)
-            return Comment.objects.filter(review__id=review_id)
-        return Comment.objects.all()
+        return Comment.objects.filter(review=self.get_review())
 
     def perform_create(self, serializer):
-        review_id = self.kwargs.get('review_id')
-        review = get_object_or_404(Review, pk=review_id)
-        serializer.save(author=self.request.user, review=review)
-
-    def update(self, request, *args, **kwargs):
-        if request.method == 'PUT':
-            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-        return super().update(request, *args, **kwargs)
+        serializer.save(author=self.request.user, review=self.get_review())
