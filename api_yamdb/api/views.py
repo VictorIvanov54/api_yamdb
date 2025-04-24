@@ -173,18 +173,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         title = self.get_title()
-        if Review.objects.filter(author=self.request.user,
-                                 title=title).exists():
-            raise ValidationError("Вы уже оставили отзыв на это произведение.")
         serializer.save(author=self.request.user, title=title)
-
-    def create(self, request, *args, **kwargs):
-        try:
-            return super().create(request, *args, **kwargs)
-        except ValidationError as e:
-            # Используем str(e) для получения сообщения об ошибке
-            return Response({"detail": str(e)},
-                            status=status.HTTP_400_BAD_REQUEST)
 
 
 class CommentViewSet(viewsets.ModelViewSet):

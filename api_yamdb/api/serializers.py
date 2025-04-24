@@ -1,6 +1,7 @@
 """Модуль сериализаторов проекта."""
 from django.conf import settings
 
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
 from reviews.models import User, Genre, Category, Title, Review, Comment
@@ -9,11 +10,29 @@ from .mixins import UserValidationMixin
 
 class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.ReadOnlyField(source='author.username')
+    title = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = Review
         fields = ('id', 'title', 'text', 'score', 'author', 'pub_date')
         read_only_fields = ('id', 'author', 'pub_date', 'title')
+
+    def validate(self, data):
+        if self.instance is None:
+            title_id = self.context['view'].kwargs.get('title_id')
+            title = get_object_or_404(Title, pk=title_id)
+            author = self.context['request'].user
+
+            if Review.objects.filter(author=author, title=title).exists():
+                raise serializers.ValidationError(
+                    "Вы уже оставили отзыв на это произведение.")
+            data['title'] = title
+        return data
+
+    def update(self, instance, validated_data):
+        validated_data.pop('title', None)
+        validated_data.pop('author', None)
+        return super().update(instance, validated_data)
 
 
 class CommentSerializer(serializers.ModelSerializer):
