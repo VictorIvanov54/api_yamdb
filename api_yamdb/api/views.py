@@ -119,20 +119,12 @@ class GenreViewSet(ListCreateDeleteViewSet):
     """Вьюсет модели Жанров."""
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = (IsAdminOrReadOnly, )
-    lookup_field = 'slug'
-    filter_backends = (filters.SearchFilter, )
-    search_fields = ('name', 'slug')
 
 
 class CategoryViewSet(ListCreateDeleteViewSet):
     """Вьюсет модели Категорий."""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = (IsAdminOrReadOnly, )
-    lookup_field = 'slug'
-    filter_backends = (filters.SearchFilter, )
-    search_fields = ('name', )
 
 
 class TitleViewSet(viewsets.ModelViewSet):

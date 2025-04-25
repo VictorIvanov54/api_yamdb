@@ -8,7 +8,7 @@ from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models
 
-from .validators import validate_username
+from reviews.validators import validate_username, validate_year
 
 
 class User(AbstractUser):
@@ -123,13 +123,9 @@ class Title(models.Model):
     class Meta:
         ordering = ('name',)
 
-    def validate_year(self, value):
-        current_year = date.today().year
-        if value > current_year:
-            raise ValidationError(
-                'Год произведения не может быть в будущем.'
-            )
-        return value
+    def clean(self):
+        super().clean()
+        validate_year(self.year)
 
     def __str__(self):
         return self.name

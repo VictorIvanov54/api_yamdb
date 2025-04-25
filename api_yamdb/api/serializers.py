@@ -25,7 +25,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
             if Review.objects.filter(author=author, title=title).exists():
                 raise serializers.ValidationError(
-                    "Вы уже оставили отзыв на это произведение.")
+                    'Вы уже оставили отзыв на это произведение.')
             data['title'] = title
         return data
 
