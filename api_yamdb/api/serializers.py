@@ -53,7 +53,7 @@ class CommentSerializer(serializers.ModelSerializer):
 class UserSerializer(UserValidationMixin, serializers.ModelSerializer):
     """Сериализатор для модели User. Для всех пользователей."""
     username = serializers.RegexField(
-        regex=r'^[\w.@+-]+\Z',
+        regex=settings.USERNAME_REGEX,
         required=True,
         allow_blank=False,
         max_length=settings.MAX_LENGTH_USERNAME
@@ -93,38 +93,13 @@ class UserSerializer(UserValidationMixin, serializers.ModelSerializer):
         return fields
 
 
-class SignupSerializer(serializers.Serializer):
+class SignupSerializer(UserValidationMixin, serializers.Serializer):
     """Сериализатор для регистрации пользователей."""
     email = serializers.EmailField(max_length=settings.MAX_LENGTH)
     username = serializers.RegexField(
-        regex=r'^[\w.@+-]+\Z',
+        regex=settings.USERNAME_REGEX,
         max_length=settings.MAX_LENGTH_USERNAME
     )
-
-    def validate_username(self, value):
-        """Функция запрещает задавать имя 'me' в поле 'username'."""
-        if value.lower() == 'me':
-            raise serializers.ValidationError('Имя "me" запрещено.')
-        return value
-
-    def validate(self, data):
-        email = data.get('email')
-        username = data.get('username')
-
-        user_with_email = User.objects.filter(email=email).first()
-        user_with_username = User.objects.filter(username=username).first()
-
-        if user_with_email and user_with_email.username != username:
-            raise serializers.ValidationError(
-                'Данный email уже используется другим пользователем.'
-            )
-
-        if user_with_username and user_with_username.email != email:
-            raise serializers.ValidationError(
-                'Email не соответствует данным пользователя.',
-            )
-
-        return data
 
 
 class TokenObtainSerializer(serializers.Serializer):

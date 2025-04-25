@@ -21,7 +21,7 @@ class User(AbstractUser):
         (ADMIN, 'Admin'),
     ]
 
-    role_max_length = max(len(role[0]) for role in ROLE_CHOICES)
+    role_max_length = max(len(role) for role, _ in ROLE_CHOICES)
 
     email = models.EmailField(
         max_length=settings.MAX_LENGTH,
