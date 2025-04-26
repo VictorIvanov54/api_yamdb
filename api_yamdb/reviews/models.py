@@ -156,7 +156,7 @@ class Review(models.Model):
         unique_together = ('author', 'title')
 
     def __str__(self):
-        return self.text[:50]
+        return self.text[:settings.MAX_LENGTH_BEGINNING_TEXT]
 
 
 class Comment(models.Model):
